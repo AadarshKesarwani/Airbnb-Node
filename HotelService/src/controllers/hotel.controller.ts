@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { createHotelService, getAllHotelsService, getHotelByIdService } from "../service/hotel.service";
+import { createHotelService, deleteHotelService, getAllHotelsService, getHotelByIdService } from "../service/hotel.service";
 import { StatusCodes } from "http-status-codes";
 
 
@@ -39,6 +39,20 @@ export async function getAllHotelsHandler(req: Request, res:Response, next: Next
         res.status(StatusCodes.OK).json({
             message : "Hotels retrieved successfully",
             data : hotelsResponse,
+            success : true
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function deleteHotelHandler(req: Request, res:Response, next: NextFunction) {
+    try {
+        const hotelId = Number(req.params.id);
+        const hotelResponse = await deleteHotelService(hotelId);
+        res.status(StatusCodes.OK).json({
+            message : "Hotel deleted successfully",
+            data : hotelResponse,
             success : true
         });
     } catch (error) {

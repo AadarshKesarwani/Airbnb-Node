@@ -12,15 +12,26 @@ datasource db {
 }
 
 model Booking {
+  id               Int           @id @default(autoincrement())
+  userId           Int
+  hotelId          Int
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  bookingAmount    Int
+  status           Bookingstatus @default(PENDING)
+  totalGuests      Int
+  idempotencyKeyId Int?          @unique // Foreign key to IdempotencyKey table
+
+  //relations
+  idempotencyKey IdempotencyKey? @relation(fields: [idempotencyKeyId], references: [id])
+}
+
+model IdempotencyKey {
   id        Int      @id @default(autoincrement())
-  userId    Int
-  hotelId   Int
+  key       String   @unique //uuid
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  bookingAmount Int
-  status    Bookingstatus
-  totalGuests Int
-
+  booking   Booking?
 }
 
 enum Bookingstatus {
