@@ -9,27 +9,27 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL") 
+  url      = env("DATABASE_URL")
 }
 
 model Booking {
-  id               Int           @id @default(autoincrement())
-  userId           Int
-  hotelId          Int
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  bookingAmount    Int
-  status           Bookingstatus @default(PENDING)
-  totalGuests      Int
-  idempotencyKey   IdempotencyKey? 
+  id             Int             @id @default(autoincrement())
+  userId         Int
+  hotelId        Int
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  bookingAmount  Int
+  status         Bookingstatus   @default(PENDING)
+  totalGuests    Int
+  idempotencyKey IdempotencyKey?
 }
 
 model IdempotencyKey {
   id        Int      @id @default(autoincrement())
-  key       String   @unique //uuid
+  IdemKey   String   @unique //uuid
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  bookingId Int?     @unique // Foreign key to Booking table
+  bookingId Int      @unique // Foreign key to Booking table
   booking   Booking? @relation(fields: [bookingId], references: [id])
   finalized Boolean  @default(false)
 }
