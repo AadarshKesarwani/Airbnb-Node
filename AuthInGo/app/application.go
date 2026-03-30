@@ -8,6 +8,7 @@ import (
     config "AuthInGo/config/env"
     "net/http"
     "fmt"
+    "database/sql"
 )
 
 
@@ -24,14 +25,15 @@ func NewConfig() Config {
 
 type Application struct {
     Config Config
+    DB     *sql.DB
 }
 
-func NewApplication(cfg Config) *Application {
+func NewApplication(cfg Config, db *sql.DB) *Application {
     return &Application{
         Config: cfg,
+        DB:     db,
     }
 }
-
 
 func (app *Application) Run() error {
     ur := repositories.NewUserRepository()
