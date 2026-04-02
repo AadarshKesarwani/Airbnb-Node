@@ -1,20 +1,25 @@
 package app
 
 import (
+    dbConfig "AuthInGo/config/db"
     "AuthInGo/controllers"
     "AuthInGo/router"
     "AuthInGo/services"
-    "AuthInGo/db/repositories"
+    repo "AuthInGo/db/repositories"
     config "AuthInGo/config/env"
-    "net/http"
     "fmt"
     "database/sql"
+    "time"
+    "net/http"
 )
 
 
+
 type Config struct {
-    Addr string
+    Addr string //PORT
 }
+
+
 
 func NewConfig() Config {
     port := config.GetString("PORT", ":8080")
@@ -25,18 +30,21 @@ func NewConfig() Config {
 
 type Application struct {
     Config Config
-    DB     *sql.DB
 }
 
-func NewApplication(cfg Config, db *sql.DB) *Application {
+func NewApplication(cfg Config) *Application {
     return &Application{
         Config: cfg,
-        DB:     db,
     }
 }
 
 func (app *Application) Run() error {
-    ur := repositories.NewUserRepository()
+    db , err := dbConfig.SetupDB()
+    if err != nil {
+        fmt.Println("Failed to set up database:", err)
+        return err
+    }
+    ur := repo.NewUserRepository()
     us := services.NewUserService(ur)
     uc := controllers.NewUserController(us)
     uRouter := router.NewUserRouter(uc)
@@ -44,6 +52,8 @@ func (app *Application) Run() error {
     server := &http.Server{
         Addr:    app.Config.Addr,
         Handler: router.SetupRouter(uRouter),
+        ReadTimeout:  10 * time.Second,
+        WriteTimeout: 10 * time.Second,
     }
     fmt.Println("Starting server on", app.Config.Addr)
     return server.ListenAndServe()

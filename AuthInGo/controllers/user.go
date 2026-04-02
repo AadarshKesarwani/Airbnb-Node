@@ -3,6 +3,7 @@ package controllers
 import (
     "net/http"
     "AuthInGo/services"
+    "net/http"
 )
 
 type UserController struct {
@@ -15,7 +16,8 @@ func NewUserController(us services.UserService) *UserController {
     }
 }
 
-func (uc *UserController) RegisterUser(w http.ResponseWriter, r *http.Request) {
-    uc.UserService.CreateUser()
-    w.Write([]byte("User registration endpoint"))
+func (uc *UserController) GetUserById(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("GetUserById called in UserController")
+	uc.UserService.GetUserById()
+	w.Write([]byte("User fetching endpoint done"))
 }

@@ -9,12 +9,12 @@ type UserRouter struct {
     userController *controllers.UserController
 }
 
-func NewUserRouter(uc *controllers.UserController) *UserRouter {
+func NewUserRouter(_userController *controllers.UserController) *UserRouter {
     return &UserRouter{
-        userController: uc,
+        userController: _userController,
     }
 }
 
 func (ur *UserRouter) Register(r chi.Router) {
-    r.Post("/signup", ur.userController.RegisterUser)
+    r.Get("/users/{id}", ur.userController.GetUserById)
 }

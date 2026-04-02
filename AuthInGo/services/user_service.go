@@ -1,7 +1,7 @@
 package services
 
 import (
-    "AuthInGo/db/repositories"
+    db "AuthInGo/db/repositories"
 )
 
 
@@ -10,16 +10,17 @@ type UserService interface {
 }
 
 type UserServiceImpl struct {
-    userRepository repositories.UserRepository
+    userRepository db.UserRepository
 }
 
-func NewUserService(ur repositories.UserRepository) *UserServiceImpl {
+func NewUserService(ur db.UserRepository) *UserServiceImpl {
     return &UserServiceImpl{
         userRepository: ur,
     }
 }
 
-func (u *UserServiceImpl) CreateUser() error {
-    u.userRepository.Create()
-    return nil
+func (u *UserServiceImpl) GetUserById() error {
+	fmt.Println("Fetching user in UserService")
+	u.userRepository.GetByID()
+	return nil
 }
