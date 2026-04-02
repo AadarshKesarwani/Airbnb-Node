@@ -2,6 +2,7 @@ package router
 
 import (
     "AuthInGo/controllers"
+    // "AuthInGo/middlewares"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -20,8 +21,9 @@ func SetupRouter(userRouter *UserRouter) *chi.Mux {
 
     // chiRouter.Use(middlewares.RequestLogger) // Middleware for logging requests
 
-	chiRouter.Use(middleware.Logger) // Built-in 
+	chiRouter.Use(middleware.Logger) // Built-in middleware for logging
 
+    // chiRouter.Use(middlewares.RateLimiteMiddleware) // Middleware for rate limiting
 
     chiRouter.Get("/ping", controllers.PingHandler)
 

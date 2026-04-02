@@ -6,7 +6,6 @@ import (
     "AuthInGo/services"
     "net/http"
     "fmt"
-    "strconv"
 )
 
 
@@ -41,31 +40,26 @@ func (uc *UserController) GetUserById(w http.ResponseWriter, r *http.Request) {
     // Validate the user ID
     // We check if the user ID is provided and if it can be parsed into an integer. If the user ID is missing or invalid, we return a 400 Bad Request response with an appropriate error message. If the user is not found, we return a 404 Not Found response. If there is an internal server error while fetching the user, we return a 500 Internal Server Error response. If the user is successfully fetched, we return a 200 OK response with the user details in the response body.
 	if userId == "" {
-		utils.WriteErrorResponse(w, http.StatusBadRequest, "User ID is required", fmt.Errorf("missing user ID"))
-		return
+		userId =r.Context().Value("userID").(string)
 	}
 
-    // Parse the user ID to an integer
-	id, err := strconv.ParseInt(userId, 10, 64)
+    fmt.Println("User ID extracted from URL:", userId)
 
-    // If there was an error parsing the user ID, return a 400 Bad Request response
-	if err != nil {
-		utils.WriteErrorResponse(w, http.StatusBadRequest, "Invalid user ID format", err)
-		return
-	}
+    if userId == "" {
+        utils.WriteErrorResponse(w, http.StatusBadRequest, "User ID is required", fmt.Errorf("user ID is missing in the request"))
+        return
+    }
 
-    // Call the UserService to fetch the user details by ID
-	user, err := uc.UserService.GetUserById(id)
+    user, err := uc.UserService.GetUserById(userId)
 
-    // Handle errors and return appropriate responses
-	if err != nil {
-		utils.WriteErrorResponse(w, http.StatusInternalServerError, "Failed to fetch user", err)
-		return
-	}
+    if err != nil {
+        utils.WriteErrorResponse(w, http.StatusInternalServerError, "Failed to fetch user", err)
+        return
+    }
 
     // If the user is not found, return a 404 Not Found response
 	if user == nil {
-		utils.WriteErrorResponse(w, http.StatusNotFound, "User not found", fmt.Errorf("user with ID %d not found", id))
+		utils.WriteErrorResponse(w, http.StatusNotFound, "User not found", fmt.Errorf("user with ID %s not found", userId))
 		return
 	}
 
@@ -89,6 +83,8 @@ func (uc *UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 
     user,err := uc.UserService.CreateUser(&payload)
+
+
     if err != nil {
         utils.WriteErrorResponse(w, http.StatusInternalServerError, "user creation failed", err)
         return
