@@ -1,11 +1,18 @@
 package router
 
 import (
-    "github.com/go-chi/chi/v5"
-	"AuthInGo/controllers"
-    "github.com/go-chi/chi/v5/middleware"
-    "AuthInGo/middlewares"
+    "AuthInGo/controllers"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
+
+
+type Router interface {
+	Register(r chi.Router)
+}
+
+
 
 func SetupRouter(userRouter *UserRouter) *chi.Mux {
 
@@ -13,9 +20,7 @@ func SetupRouter(userRouter *UserRouter) *chi.Mux {
 
     // chiRouter.Use(middlewares.RequestLogger) // Middleware for logging requests
 
-	chiRouter.Use(middleware.Logger) // Built-in Chi middleware for
-    //  logging requests
-    chiRouter.Use(middlewares.RequestValidator) // Built-in Chi middleware for recovering from panics
+	chiRouter.Use(middleware.Logger) // Built-in 
 
 
     chiRouter.Get("/ping", controllers.PingHandler)

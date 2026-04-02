@@ -81,17 +81,8 @@ func (uc *UserController) GetUserById(w http.ResponseWriter, r *http.Request) {
 func (uc *UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 
     fmt.Println("CreateUser called in UserController")
-    // Here we would typically parse the request payload, validate it, and then call the UserService to perform the user creation logic. For simplicity, we are just printing a message and returning a response.
-
-    //payload is the data that we receive in the request body when a client makes a request to create a new user. We need to read this data and parse it into a structured format (like a struct) so that we can work with it in our code. In this example, we are using the utils.ReadJSONBody function to read the JSON payload from the request body and unmarshal it into a CreateUserRequestDTO struct. This allows us to easily access the user details (like username, email, and password) that were sent in the request when we call the UserService to create the user.
-    var payload dto.CreateUserRequestDTO
-
-    // Read and parse the JSON payload from the request body
-    // We call the utils.ReadJSONBody function, passing in the HTTP request (r) and a pointer to the payload variable. This function will read the JSON data from the request body and unmarshal it into the CreateUserRequestDTO struct. If there is an error during this process (e.g., if the JSON is malformed), we return a 400 Bad Request response with an appropriate error message.
-    if jsonErr := utils.ReadJSONBody(r, &payload); jsonErr != nil {
-        utils.WriteErrorResponse(w, http.StatusBadRequest, "something went wrong", jsonErr)
-        return
-    }
+    
+    payload := r.Context().Value("payload").(dto.CreateUserRequestDTO)
 
     // Print the parsed payload for debugging purposes
     fmt.Println("Parsed create user payload:", payload)
@@ -115,19 +106,14 @@ func (uc *UserController) LoginUser(w http.ResponseWriter, r *http.Request) {
 
     fmt.Println("LoginUser called in UserController")
 
-    // Here we would typically parse the login request payload, validate it, and then call the UserService to perform the login logic. For simplicity, we are just printing a message and returning a response.
-    var payload dto.LoginUserRequestDTO
+    payload := r.Context().Value("payload").(dto.LoginUserRequestDTO)
 
-    if jsonErr := utils.ReadJSONBody(r, &payload); jsonErr != nil {
-        utils.WriteErrorResponse(w, http.StatusBadRequest, "something went wrong", jsonErr)
-        return  
-    }
-
-    fmt.Println("Parsed login payload:", payload)
+    // Print the parsed payload for debugging purposes
+    fmt.Println("Parsed login user payload:", payload)
 
 
     // Call the UserService to perform the login logic
-    token, err := uc.UserService.LoginUser(&payload)
+    jwtToken, err := uc.UserService.LoginUser(&payload)
 
     if err != nil {
         utils.WriteErrorResponse(w, http.StatusInternalServerError, "login failed", err)
@@ -135,6 +121,6 @@ func (uc *UserController) LoginUser(w http.ResponseWriter, r *http.Request) {
     }
 
     // If login is successful, return the token in the response
-    utils.WriteSuccessResponse(w, token, http.StatusOK, "user logged in successfully")
+    utils.WriteSuccessResponse(w, jwtToken, http.StatusOK, "user logged in successfully")
 
 }
