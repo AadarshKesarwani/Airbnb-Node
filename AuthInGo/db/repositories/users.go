@@ -7,10 +7,11 @@ import (
 )
 
 type UserRepository interface {
-    Create(username string, email string, password string) error
-    GetByID() (*models.User, error)
+    Create(username string, email string, password string) (*models.User, error)
+    GetByID(id int64) (*models.User, error)
     GetALL() ([]*models.User, error)
-    DeleteById(int64) error
+    DeleteById(id int64) error
+    GetByEmail(email string) (*models.User, error)
 }
 
 type UserRepositoryImpl struct {
@@ -25,7 +26,7 @@ func NewUserRepository(_db *sql.DB) *UserRepositoryImpl {
 
 
 
-func (u *UserRepositoryImpl) Create(username string, email string, password string) error {
+func (u *UserRepositoryImpl) Create(username string, email string, hashedPassword string) (*models.User, error) {
 
     // Implement the logic to create a new user in the database
     //means we are defining the SQL query to insert a new user record into the users table. The query uses placeholders (?) for the values that will be provided when executing the query. This allows us to safely insert user data into the database without risking SQL injection attacks.
@@ -36,7 +37,7 @@ func (u *UserRepositoryImpl) Create(username string, email string, password stri
     
 
 
-    result, err := u.db.Exec(query, username, email, password)
+    result, err := u.db.Exec(query, username, email, hashedPassword)
 
 
 
@@ -46,42 +47,43 @@ func (u *UserRepositoryImpl) Create(username string, email string, password stri
 
     if err != nil {
         fmt.Println("Error creating user:", err)
-        return err
+        return nil, err
     }
 
     // Check if the user was created successfully by checking the number of rows affected    //means we are checking the number of rows affected by the query execution to determine if the user was created successfully. If the number of rows affected is zero, it means that no user was created, and we return an error indicating that the user creation failed. If there are rows affected, it means that the user was created successfully, and we can log this information.
 
 
-    rowsAffected, errRow := result.RowsAffected()
+    lastInsertID, errRow := result.LastInsertId()
 
     if errRow != nil {
-        fmt.Println("Error fetching rows affected:", errRow)
-        return errRow
+        fmt.Println("Error fetching last insert ID:", errRow)
+        return nil, errRow
     }
 
-    if rowsAffected == 0 {
-        fmt.Println("No user created")
-        return fmt.Errorf("no user created")
+    user := &models.User{
+        Id:     lastInsertID, // You can fetch the last inserted ID if needed
+        Username: username,
+        Email:    email,
     }
 
     // Log the successful creation of the user
-    fmt.Println("User created successfully:", rowsAffected)
+    fmt.Println("User created successfully:", user)
 
-    return nil
+    return user, nil
 
 }
 
 
-func (u *UserRepositoryImpl) GetByID() (*models.User, error) {
+func (u *UserRepositoryImpl) GetByID(id int64) (*models.User, error) {
     // Implement the logic to fetch a user by ID from the database
-    
+
     query := "SELECT id, username, email, password, created_at, updated_at FROM users WHERE id = ?"
 
     // Execute the query and scan the result into a User struct
     //means we are executing the query with the provided ID and getting a single row as a result. The row variable will hold the result of the query execution, which can be scanned into a User struct to fetch the user details from the database.
 
 
-    row := u.db.QueryRow(query, 1) // Example ID, replace with actual ID as needed
+    row := u.db.QueryRow(query, id)
 
 
 
@@ -107,7 +109,7 @@ func (u *UserRepositoryImpl) GetByID() (*models.User, error) {
     //means we are checking if there was an error during the scanning process. If the error is sql.ErrNoRows, it means that no user was found with the provided ID, and we return nil without an error. If there is any other error, we log it and return the error to the caller.
     if err != nil {
         if err == sql.ErrNoRows {
-            fmt.Println("No user found with ID:", 1)
+            fmt.Println("No user found with ID:", id)
             return nil, nil // No user found, return nil without an error
         }
         fmt.Println("Error fetching user by ID:", err)
@@ -215,4 +217,42 @@ func (u *UserRepositoryImpl) DeleteById(id int64) error {
 
     fmt.Println("User deleted successfully")
     return nil // Return no error if the user was deleted successfully  
+}
+
+
+
+
+
+
+
+func (u *UserRepositoryImpl) GetByEmail(email string) (*models.User, error) {
+
+    // Implement the logic to fetch a user by email from the database
+
+    query := "SELECT id, username, email, password, created_at, updated_at FROM users WHERE email = ?"
+
+    // Execute the query and scan the result into a User struct
+    row := u.db.QueryRow(query, email)
+
+    user := &models.User{} // Create a new User struct
+
+    // Scan the result into the User struct
+    err := row.Scan(
+        &user.Id,
+        &user.Username,
+        &user.Email,
+        &user.Password,
+        &user.CreatedAt,
+        &user.UpdatedAt,
+    )
+    if err != nil {
+    if err == sql.ErrNoRows {
+        fmt.Println("No user found with email:", email)
+        return nil, fmt.Errorf("user not found")
+    }
+    fmt.Println("Error fetching user by email:", err)
+    return nil, err
+    }
+
+    return user, nil
 }
