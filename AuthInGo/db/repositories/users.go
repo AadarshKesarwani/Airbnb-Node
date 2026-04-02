@@ -7,7 +7,7 @@ import (
 )
 
 type UserRepository interface {
-    Create() error
+    Create(username string, email string, password string) error
     GetByID() (*models.User, error)
     GetALL() ([]*models.User, error)
     DeleteById(int64) error
@@ -25,25 +25,35 @@ func NewUserRepository(_db *sql.DB) *UserRepositoryImpl {
 
 
 
-func (u *UserRepositoryImpl) Create() error {
+func (u *UserRepositoryImpl) Create(username string, email string, password string) error {
 
     // Implement the logic to create a new user in the database
     //means we are defining the SQL query to insert a new user record into the users table. The query uses placeholders (?) for the values that will be provided when executing the query. This allows us to safely insert user data into the database without risking SQL injection attacks.
     query := "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
 
     // Execute the query with the user details
-    //means we are executing the SQL query using the Exec method of the database connection. We pass the user details (username, email, password) as arguments to the Exec method, which will replace the placeholders in the query with the actual values. The result variable will hold the result of the query execution, which can be used to check if the user was created successfully.
-    result, err := u.db.Exec(query, "temp_user", "temp@email.com", "password")
+    //means we are executing the SQL query using the Exec method of the database connection. We pass the user details (username, email, password) as arguments to the Exec method, which will replace the placeholders in the query with the actual values. The result variable will hold the result of the query execution, which can be used to check if the user was created successfully
+    
+
+
+    result, err := u.db.Exec(query, username, email, password)
+
+
 
     // Check for errors during query execution
     //means we are checking if there was an error during the execution of the query. If there is an error, we log it and return the error to the caller. This allows us to handle any issues that may arise during the user creation process, such as database connection problems or constraints violations.
+
+
     if err != nil {
         fmt.Println("Error creating user:", err)
         return err
     }
 
     // Check if the user was created successfully by checking the number of rows affected    //means we are checking the number of rows affected by the query execution to determine if the user was created successfully. If the number of rows affected is zero, it means that no user was created, and we return an error indicating that the user creation failed. If there are rows affected, it means that the user was created successfully, and we can log this information.
+
+
     rowsAffected, errRow := result.RowsAffected()
+
     if errRow != nil {
         fmt.Println("Error fetching rows affected:", errRow)
         return errRow
@@ -64,6 +74,7 @@ func (u *UserRepositoryImpl) Create() error {
 
 func (u *UserRepositoryImpl) GetByID() (*models.User, error) {
     // Implement the logic to fetch a user by ID from the database
+    
     query := "SELECT id, username, email, password, created_at, updated_at FROM users WHERE id = ?"
 
     // Execute the query and scan the result into a User struct
