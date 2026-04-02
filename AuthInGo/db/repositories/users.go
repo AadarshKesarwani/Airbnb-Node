@@ -96,7 +96,7 @@ func (u *UserRepositoryImpl) GetByID() (*models.User, error) {
     //means we are checking if there was an error during the scanning process. If the error is sql.ErrNoRows, it means that no user was found with the provided ID, and we return nil without an error. If there is any other error, we log it and return the error to the caller.
     if err != nil {
         if err == sql.ErrNoRows {
-            fmt.Println("No user found with ID:", id)
+            fmt.Println("No user found with ID:", 1)
             return nil, nil // No user found, return nil without an error
         }
         fmt.Println("Error fetching user by ID:", err)
@@ -121,7 +121,8 @@ func (u *UserRepositoryImpl) GetALL() ([]*models.User, error) {
     query := "SELECT id, username, email, password, created_at, updated_at FROM users"
 
     // Execute the query and scan the results into a slice of User structs
-    //means we are executing the query and getting a set of rows as a result. The rows variable will hold the result of the query execution, which can be iterated over to fetch each user record from the database.
+    // means we are executing the query and getting a set of rows as a result.
+    // The rows variable will hold the result of the query execution, which can be iterated over to fetch each user record from the database.
     rows, err := u.db.Query(query)
 
     // Check for errors during query execution
@@ -131,32 +132,34 @@ func (u *UserRepositoryImpl) GetALL() ([]*models.User, error) {
     }
 
     // Ensure that the rows are closed after processing to prevent resource leaks
-    defer rows.Close() 
+    defer rows.Close()
 
     // Initialize a slice to hold the fetched users
-    //means we are creating an empty slice of pointers to User structs. This slice will be used to store the user records fetched from the database.
-    var user []*models.User
+    // means we are creating an empty slice of pointers to User structs.
+    // This slice will be used to store the user records fetched from the database.
+    var users []*models.User
 
     // Iterate over the rows and scan each user record into a User struct
     for rows.Next() {
-        user := &models.User{} // Create a new User struct for each row
-
+        u := &models.User{} // Create a new User struct for each row
 
         // Scan the current row into the User struct
-       err := rows.Scan(
-			&user.Id,
-			&user.Username,
-			&user.Email,
-			&user.Password,
-			&user.CreatedAt,
-			&user.UpdatedAt,
-		)
+        err := rows.Scan(
+            &u.Id,
+            &u.Username,
+            &u.Email,
+            &u.Password,
+            &u.CreatedAt,
+            &u.UpdatedAt,
+        )
 
         if err != nil {
             fmt.Println("Error scanning user record:", err)
             return nil, err // Return the error if scanning fails
         }
-        users = append(users, user) // Append the scanned user to the slice
+
+        // Append the scanned user to the slice
+        users = append(users, u)
     }
 
     // Check for errors that may have occurred during iteration
@@ -165,9 +168,9 @@ func (u *UserRepositoryImpl) GetALL() ([]*models.User, error) {
         return nil, err // Return the error if iteration fails
     }
 
-    fmt.Println("Users fetched successfully:", user)
+    fmt.Println("Users fetched successfully:", users)
 
-    return user, nil // Return the slice of users and no error
+    return users, nil // Return the slice of users and no error
 }
 
 

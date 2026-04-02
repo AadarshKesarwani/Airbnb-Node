@@ -2,11 +2,12 @@ package services
 
 import (
     db "AuthInGo/db/repositories"
+    "fmt"
 )
 
 
 type UserService interface {
-    CreateUser() error
+    GetUserById() error
 }
 
 type UserServiceImpl struct {

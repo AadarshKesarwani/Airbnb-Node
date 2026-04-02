@@ -1,9 +1,9 @@
 package controllers
 
 import (
-    "net/http"
     "AuthInGo/services"
     "net/http"
+    "fmt"
 )
 
 type UserController struct {
